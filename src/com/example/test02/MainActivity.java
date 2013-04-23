@@ -17,6 +17,7 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -29,10 +30,14 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -40,7 +45,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity implements SensorEventListener,LocationListener,OnClickListener{
 
 	final static String TAG = "MyService";
-	
+
 	private SensorManager smanager;
 	private LocationManager lmanager;
 	//表示
@@ -59,7 +64,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	private TextView text13;
 	private TextView text14;
 	private TextView text15;
-	
+
 	//保存用と表示 別変数化計画凍結中
 	/*
 	public double data1;
@@ -75,10 +80,10 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	public double data11;
 	public double data12;
 	public double data13;
-	public double data14;	
+	public double data14;
 	*/
-	
-	private long repeatInterval = 1;  // 繰り返しの間隔（単位：msec）0はできない．
+
+	private long repeatInterval = 20;  // 繰り返しの間隔（単位：msec）0はできない．
 	private long delayPoint = 0;  // この時間を基準とする（単位：msec）
 	private Date date;
 	private String SDFile;
@@ -87,10 +92,10 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	long startTime;
 	private boolean showflag = true;
 	//private boolean SDflag = false;
-	
+
 	private Handler handler;
-	
-	
+
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -110,50 +115,88 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 		//センサ，GPS各サービスマネージャの取得
 		smanager = (SensorManager)this.getSystemService(SENSOR_SERVICE);
 		//lmanager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
-		
+
 		//センサの情報をリストに読み込み
 		List<Sensor> sensors = smanager.getSensorList(Sensor.TYPE_ALL);
-		
+
 		//リストの中身をレジスタに取り出し
 		if(sensors.size() > 0){
 			for(Sensor sensor :sensors){
 			smanager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 		}
 
-		text1 = (TextView) this.findViewById(R.id.TextView1);
-		text2 = (TextView) this.findViewById(R.id.TextView2);
-		text3 = (TextView) this.findViewById(R.id.TextView3);
-		text4 = (TextView) this.findViewById(R.id.TextView4);
-		text5 = (TextView) this.findViewById(R.id.TextView5);
-		text6 = (TextView) this.findViewById(R.id.TextView6);
-		text7 = (TextView) this.findViewById(R.id.TextView7);
-		text8 = (TextView) this.findViewById(R.id.TextView8);
-		text9 = (TextView) this.findViewById(R.id.TextView9);
-		text10 = (TextView) this.findViewById(R.id.TextView10);
-		text11 = (TextView) this.findViewById(R.id.TextView11);
-		text12 = (TextView) this.findViewById(R.id.TextView12);
-		text13 = (TextView) this.findViewById(R.id.TextView13);
-		text14 = (TextView) this.findViewById(R.id.TextView14);
-		text15 = (TextView) this.findViewById(R.id.textView15);
-		
+			View mainpage = (View)findViewById(R.id.mainpage);
+			//View config = (View)findViewById(R.id.mainpage);
+/*
+		text1 = (TextView) mainpage.findViewById(R.id.TextView1);
+		text2 = (TextView) mainpage.findViewById(R.id.TextView2);
+		text3 = (TextView) mainpage.findViewById(R.id.TextView3);
+		text4 = (TextView) mainpage.findViewById(R.id.TextView4);
+		text5 = (TextView) mainpage.findViewById(R.id.TextView5);
+		text6 = (TextView) mainpage.findViewById(R.id.TextView6);
+		text7 = (TextView) mainpage.findViewById(R.id.TextView7);
+		text8 = (TextView) mainpage.findViewById(R.id.TextView8);
+		text9 = (TextView) mainpage.findViewById(R.id.TextView9);
+		text10 = (TextView) mainpage.findViewById(R.id.TextView10);
+		text11 = (TextView) mainpage.findViewById(R.id.TextView11);
+		text12 = (TextView) mainpage.findViewById(R.id.TextView12);
+		text13 = (TextView) mainpage.findViewById(R.id.TextView13);
+		text14 = (TextView) mainpage.findViewById(R.id.TextView14);
+		text15 = (TextView) mainpage.findViewById(R.id.textView15);
+*/
 
-		View startButton = findViewById(R.id.button1);
-		View stopButton = findViewById(R.id.Button02);
-		View hiddenButton = findViewById(R.id.Button01);
-		
+		View startButton = mainpage.findViewById(R.id.button1);
+		View stopButton = mainpage.findViewById(R.id.Button02);
+		View hiddenButton = mainpage.findViewById(R.id.Button01);
+
 		startButton.setOnClickListener(this);
 		stopButton.setOnClickListener(this);
 		hiddenButton.setOnClickListener(this);
 		}
+		Log.d(TAG ,"App start\n");
+		ViewPager mViewPager = (ViewPager)findViewById(R.id.viewpager);
+		PagerAdapter mPagerAdapter = new MyPagerAdapter();
+		mViewPager.setAdapter(mPagerAdapter);
+
 	}
-	
+
+    private class MyPagerAdapter extends PagerAdapter {
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            // レイアウトファイル名を配列で指定します。
+            int[] pages = {R.layout.mainpage , R.layout.config};
+
+            LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            View layout ;
+            layout = inflater.inflate(pages[position], null);
+            ((ViewPager) container).addView(layout);
+            return layout;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            ((ViewPager)container).removeView((View)object);
+        }
+
+        @Override
+        public int getCount() {
+            // ページ数を返します。
+            return 2;
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view.equals(object);
+        }
+    }
 
 	 private final Runnable runnable = new Runnable() {
 	  @Override
 	  public void run() {
 
 		 SimpleDateFormat fileNameDateFormat = new SimpleDateFormat("yyyy'/'MM'/'dd'_'HH':'mm':'ss",Locale.JAPAN);
-			 
+
 	   int ho = (int)((System.nanoTime() - startTime)/1000000000);
 	   text15.setText("Start Time:" + fileNameDateFormat.format(date) + "\n Elapsed time: " + ho + " s ");
 	   //1秒(1000ミリ秒)後に再帰呼び出し
@@ -162,34 +205,34 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	 };
 
 	public void onClick(View view){
-		   
-		
+
+		setContentView(R.layout.mainpage);
 		//各ボタンの処理
 		switch(view.getId()){
-		
+
 		//Startボタン処理
 		case R.id.button1:
 			// タイマーをセット
 	        timer = new Timer("testTimer");
-	        
+
 	        //startTime = System.currentTimeMillis();
 			startTime = System.nanoTime();
 			long cTM  = System.currentTimeMillis();
 			handler = new Handler();
 			handler.post(runnable);
-			
-			
+
+
 			//時間をセット
 			date = new Date(cTM);
 			//読み書き用ファイル名をセット
 			SimpleDateFormat fileNameDateFormat = new SimpleDateFormat("yyyy'_'MM'_'dd'_'HH'-'mm'-'ss",Locale.JAPAN);
 			SDFile = android.os.Environment.getExternalStorageDirectory().getPath()
 			    + "/LogData/"+ fileNameDateFormat.format(date) + ".txt";
-			
+
 			file = new File(SDFile);
 			file.getParentFile().mkdir();
 			 Log.d(TAG, "Hello!\n" + SDFile);
-			        
+
 			try{
 			    FileOutputStream fos = new FileOutputStream(file,true);
 			    OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
@@ -197,7 +240,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			    //見出し
 			    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SSS",Locale.JAPAN);
 			    String titleStr = simpleDateFormat.format(date) + "\tAccX\tAccY\tAccZ\tLAccX\tLAccY\tLAccZ\tGyroX\tGyroY\tGyroZ\tMangX\tMagY\tMagZ\tLatitude\tLongitude\n";
-			    pw.append(titleStr); 
+			    pw.append(titleStr);
 			    pw.close();
 			    osw.close();
 			    fos.close();
@@ -212,9 +255,9 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			    e.printStackTrace();
 			  }
 			Log.d(TAG, "Hello!_START BUTTON");
-			
+
 			int flag = 0;
-			
+
 			if(flag == 1){
 			//書き込み祭り
 			while(true){
@@ -222,7 +265,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				    FileOutputStream fos = new FileOutputStream(file,true);
 				    OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
 				    PrintWriter pw = new PrintWriter(osw);
-				    
+
 				    double myTime = System.nanoTime() - startTime;
 				    myTime *= 0.000000001;
 				    Log.d(TAG, "Hello!_WRITING NOW");
@@ -242,11 +285,11 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				    		+ "\t" + text10.getText().toString()
 				    		+ "\t" + text11.getText().toString()
 				    		+ "\n";
-				    pw.append(str);  
+				    pw.append(str);
 				    pw.close();
 				    osw.close();
 				    fos.close();
-				    
+
 				  }
 				  catch(FileNotFoundException e){
 				    e.printStackTrace();
@@ -267,7 +310,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				    FileOutputStream fos = new FileOutputStream(file,true);
 				    OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
 				    PrintWriter pw = new PrintWriter(osw);
-				    
+
 				    double myTime = System.nanoTime() - startTime;
 				    myTime *= 0.000000001;
 				    Log.d(TAG, "Hello!_WRITING NOW");
@@ -287,11 +330,11 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				    		+ "\t" + text10.getText().toString()
 				    		+ "\t" + text11.getText().toString()
 				    		+ "\n";
-				    pw.append(str);  
+				    pw.append(str);
 				    pw.close();
 				    osw.close();
 				    fos.close();
-				    
+
 				    /*凍結中
 				    if(showflag == true){
 				    	Log.d(TAG, "Hello!_SHOWING NOW");
@@ -310,10 +353,10 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 						text12.setText(String.format("%d",data12));
 						text13.setText(String.format("%d",data13));
 						text14.setText(String.format("%d",data14));
-						
+
 				    }
 				*/
-				    
+
 				  }
 				  catch(FileNotFoundException e){
 				    e.printStackTrace();
@@ -337,24 +380,24 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			handler.removeCallbacks(runnable);
 			cancelTimer();
 			break;
-		
+
 		//hiddenボタン処理
 		case R.id.Button01:
 			Log.d(TAG, "Hello!_HIDDEN BUTTON ");
 			showflag = !showflag;
-			
 
-			Button btn1 = (Button) this.findViewById(R.id.button2);  
-	        if (btn1.getVisibility() != View.VISIBLE) {  
-	            btn1.setVisibility(View.VISIBLE);  
-	        } else {  
-	            btn1.setVisibility(View.INVISIBLE);  
-	        }   
-			
+
+			Button btn1 = (Button) this.findViewById(R.id.button2);
+	        if (btn1.getVisibility() != View.VISIBLE) {
+	            btn1.setVisibility(View.VISIBLE);
+	        } else {
+	            btn1.setVisibility(View.INVISIBLE);
+	        }
+
 			break;
 		}
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -373,80 +416,80 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 
 		//各センサの値を取得
 		if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-		
+
 			text1.setText(String.format("%f",event.values[0]));
 			text2.setText(String.format("%f",event.values[1]));
 			text3.setText(String.format("%f",event.values[2]));
 			//data1 = event.values[0];
 			//data2 = event.values[1];
 			//data3 = event.values[2];
-			
+
 		}else if(event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
-			
+
 			text4.setText(String.format("%f",event.values[0]));
 			text5.setText(String.format("%f",event.values[1]));
 			text6.setText(String.format("%f",event.values[2]));
-			
+
 			//data4 = event.values[0];
 			//data5 = event.values[1];
 			//data6 = event.values[2];
-		
+
 		}else if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
-			
+
 			text7.setText(String.format("%f",event.values[0]));
 			text8.setText(String.format("%f",event.values[1]));
 			text9.setText(String.format("%f",event.values[2]));
-			
+
 			//data7 = event.values[0];
 			//data8 = event.values[1];
 			//data9 = event.values[2];
-		
+
 		}else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION){
-			
+
 			text12.setText(String.format("%f",event.values[0]));
 			text13.setText(String.format("%f",event.values[1]));
 			text14.setText(String.format("%f",event.values[2]));
-			
+
 			//data12 = event.values[0];
 			//data13 = event.values[1];
 			//data14 = event.values[2];
-				
-		
-		}	
-	}	
+
+
+		}
+	}
 	@Override
 	public void onLocationChanged(Location location){
 		//GPSの値が取得された時の処理
 		double lat = location.getLatitude();
 		double lon = location.getLongitude();
-		
+
 		//data10 = lat;
 		//data11 = lon;
 		text10.setText(Double.toString(lat));
-		text11.setText(Double.toString(lon));	
+		text11.setText(Double.toString(lon));
 	}
-	
+
 	@Override
 	public void onProviderDisabled(String provider){}
-	
+
 	@Override
 	public void onProviderEnabled(String provider){}
-	
+
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras){}
-	
+
 
     @Override
     protected void onResume() {
     	lmanager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        
-    	
+
+
     	if(!lmanager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
     		//GPSの有効化を尋ねる．
     		AlertDialog.Builder builder = new AlertDialog.Builder(this);
     		builder.setTitle("Location Manager");
     		builder.setMessage("Please on GPS.\n  Can you change these settings now?");
-    		
+
     		builder.setPositiveButton("YES",new DialogInterface.OnClickListener(){
     			@Override
     			public void onClick(DialogInterface dialog, int which){
@@ -461,10 +504,10 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
     			}
 			});
     	}
-    	
+
         //List<String> providers = lmanager.getProviders(true);
         //for (String provider : providers) {
-    	String provider = LocationManager.GPS_PROVIDER;  
+    	String provider = LocationManager.GPS_PROVIDER;
     	lmanager.requestLocationUpdates(provider, 0, 0, this);
         //}
         super.onResume();
@@ -477,7 +520,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
      }
    /* 凍結中
     public void showData(){
-    	
+
     	text1.setText(String.format("%f",data1));
 		text2.setText(String.format("%f",data2));
 		text3.setText(String.format("%f",data3));
@@ -494,7 +537,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 		text14.setText(String.format("%f",data14));
     }
     */
-    
+
     @Override
     protected void onPause() {
         if (lmanager != null) {
@@ -502,7 +545,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
         }
         super.onPause();
     }
-    
+
     @Override
     protected void onDestroy() {
       super.onDestroy();
