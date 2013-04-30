@@ -7,7 +7,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
-    
+
     <TextView
         android:id="@+id/AccX"
         android:layout_width="wrap_content"
@@ -193,16 +193,6 @@
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
-        android:id="@+id/Latitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/MagY"
-        android:layout_below="@+id/MagZ"
-        android:layout_marginTop="29dp"
-        android:text="GPS_Latitude:"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <TextView
         android:id="@+id/LAccY"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -277,16 +267,6 @@
         android:layout_centerHorizontal="true"
         android:text="start" />
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/Button02"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:text="Stop drawing!"
-        android:visibility="invisible" />
-
     <TextView
         android:id="@+id/GyroX"
         android:layout_width="wrap_content"
@@ -324,5 +304,52 @@
         android:text="-Time-"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/Button02"
+        android:layout_alignLeft="@+id/Longitude"
+        android:text="Stop drawing!"
+        android:visibility="invisible" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/Longitude"
+        android:layout_centerHorizontal="true"
+        android:ems="10"
+        android:text="memo" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/Latitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/TextView9"
+        android:layout_marginTop="12dp"
+        android:layout_toLeftOf="@+id/TextView10"
+        android:text="GPS_Latitude:"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <SeekBar
+        android:id="@+id/seekBar1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button2"
+        android:layout_alignLeft="@+id/button2"
+        android:layout_toLeftOf="@+id/textView16" />
+
+    <TextView
+        android:id="@+id/textView16"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button2"
+        android:layout_alignRight="@+id/button2"
+        android:text="50"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>

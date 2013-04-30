@@ -34,7 +34,12 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+
+import com.example.test02.R.id;
 
 public class MainActivity extends Activity implements SensorEventListener,LocationListener,OnClickListener{
 
@@ -58,9 +63,8 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	private TextView text13;
 	private TextView text14;
 	private TextView text15;
+	private TextView samplingRate;
 
-	private long repeatInterval = 1;  // 繰り返しの間隔（単位：msec）0はできない．
-	private long delayPoint = 0;  // この時間を基準とする（単位：msec）
 	private Date date;
 	private String SDFile;
 	private File file;
@@ -69,7 +73,9 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	private boolean showflag = true;
 	private boolean writeFlag = false;
 	private boolean buttonFlag = false;
-	private int writeModeFlag = 0; //書き込みモードの変更 0：センサ値変化時に書き込み 1：While書き込み 2：ピリオド書き込み
+	private int writeModeFlag = 2; //書き込みモードの変更 0：センサ値変化時に書き込み 1：While書き込み 2：ピリオド書き込み
+	private long repeatInterval = 20;  // 繰り返しの間隔（単位：msec）0はできない．
+	private long delayPoint = 0;  // この時間を基準とする（単位：msec）
 	private Handler handler;
 
 
@@ -117,6 +123,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			text13 = (TextView) this.findViewById(R.id.TextView13);
 			text14 = (TextView) this.findViewById(R.id.TextView14);
 			text15 = (TextView) this.findViewById(R.id.textView15);
+			samplingRate = (TextView) this.findViewById(R.id.textView16);
 
 			View startButton = findViewById(R.id.button1);
 			View stopButton = findViewById(R.id.Button02);
@@ -126,6 +133,45 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			stopButton.setOnClickListener(this);
 			hiddenButton.setOnClickListener(this);
 		}
+
+		SeekBar seekBar = (SeekBar) findViewById(id.seekBar1);
+        seekBar.setMax(100);
+        seekBar.setProgress(20);
+        seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            // トラッキング開始時に呼び出されます
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                Log.v("onStartTrackingTouch()",
+                    String.valueOf(seekBar.getProgress()));
+            }
+            // トラッキング中に呼び出されます
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
+                Log.v("onProgressChanged()",
+                    String.valueOf(progress) + ", " + String.valueOf(fromTouch));
+                int intHz;
+                double Hz = Double.valueOf(String.valueOf(progress));
+                if(Hz == 0){
+                	intHz = 1000;
+                }else{
+                	intHz = (int)(1000/Hz);
+                }
+                samplingRate.setText(Integer.toString(intHz));
+            }
+            // トラッキング終了時に呼び出されます
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Log.v("onStopTrackingTouch()",
+                    String.valueOf(seekBar.getProgress()));
+                Long Hz = Long.valueOf(seekBar.getProgress());
+                if(Hz == 0){
+                	repeatInterval = 1;
+                }else{
+                	repeatInterval = Hz;
+                }
+            }
+        });
+
 	}
 
 
@@ -169,16 +215,26 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 
 				file = new File(SDFile);
 				file.getParentFile().mkdir();
+
+				EditText memo;
+				memo = (EditText) this.findViewById(R.id.editText1);
+
 				Log.d(TAG, "Hello!\n" + SDFile);
+
+
 
 				try{
 				    FileOutputStream fos = new FileOutputStream(file,true);
-				    OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+				    OutputStreamWriter osw = new OutputStreamWriter(fos,"Shift-JIS");
 				    PrintWriter pw = new PrintWriter(osw);
+				    //メモを書き出し
+				    pw.append(memo.getText().toString() + "\n");
+
 				    //見出し
 				    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SSS",Locale.JAPAN);
 				    String titleStr = simpleDateFormat.format(date) + "\tAccX\tAccY\tAccZ\tLAccX\tLAccY\tLAccZ\tGyroX\tGyroY\tGyroZ\tMangX\tMagY\tMagZ\tLatitude\tLongitude\n";
 				    pw.append(titleStr);
+				    //ファイルストリーム閉じ
 				    pw.close();
 				    osw.close();
 				    fos.close();
@@ -374,8 +430,8 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 
 
 		}
-		if(writeFlag == true 
-				&&(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER 
+		if(writeFlag == true
+				&&(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER
 				|| event.sensor.getType() == Sensor.TYPE_GYROSCOPE
 				|| event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD
 				|| event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
