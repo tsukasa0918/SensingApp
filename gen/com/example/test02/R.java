@@ -21,7 +21,8 @@ public final class R {
         public static final int activity_vertical_margin=0x7f040001;
     }
     public static final class drawable {
-        public static final int ic_launcher=0x7f020000;
+        public static final int hide=0x7f020000;
+        public static final int ic_launcher=0x7f020001;
     }
     public static final class id {
         public static final int AccX=0x7f080000;
@@ -54,13 +55,16 @@ public final class R {
         public static final int TextView7=0x7f08000d;
         public static final int TextView8=0x7f08000f;
         public static final int TextView9=0x7f080010;
-        public static final int action_settings=0x7f080024;
+        public static final int action_settings=0x7f080027;
         public static final int button1=0x7f080001;
         public static final int button2=0x7f080020;
         public static final int editText1=0x7f080021;
+        public static final int imageButton1=0x7f080026;
         public static final int seekBar1=0x7f080022;
+        public static final int spinner1=0x7f080025;
         public static final int textView15=0x7f08001f;
         public static final int textView16=0x7f080023;
+        public static final int textView17=0x7f080024;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;

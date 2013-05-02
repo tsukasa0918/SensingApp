@@ -33,10 +33,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.test02.R.id;
@@ -64,6 +67,9 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	private TextView text14;
 	private TextView text15;
 	private TextView samplingRate;
+	private TextView samplingRate2;
+	private SeekBar seekBar;
+	private ImageButton hide;
 
 	private Date date;
 	private String SDFile;
@@ -108,6 +114,8 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				smanager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 			}
 
+
+			//Log.d(TAG, "HERE!!\n\n");
 			text1 = (TextView) this.findViewById(R.id.TextView1);
 			text2 = (TextView) this.findViewById(R.id.TextView2);
 			text3 = (TextView) this.findViewById(R.id.TextView3);
@@ -124,17 +132,25 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			text14 = (TextView) this.findViewById(R.id.TextView14);
 			text15 = (TextView) this.findViewById(R.id.textView15);
 			samplingRate = (TextView) this.findViewById(R.id.textView16);
+			samplingRate2 = (TextView) this.findViewById(R.id.textView17);
+			seekBar = (SeekBar) findViewById(id.seekBar1);
+			hide = (ImageButton) findViewById(id.imageButton1);
+
+			hide.setVisibility(View.INVISIBLE);
 
 			View startButton = findViewById(R.id.button1);
 			View stopButton = findViewById(R.id.Button02);
 			View hiddenButton = findViewById(R.id.Button01);
+			View showButton = findViewById(R.id.imageButton1);
 
 			startButton.setOnClickListener(this);
 			stopButton.setOnClickListener(this);
 			hiddenButton.setOnClickListener(this);
+			showButton.setOnClickListener(this);
 		}
 
-		SeekBar seekBar = (SeekBar) findViewById(id.seekBar1);
+		//シークバーの設定
+
         seekBar.setMax(100);
         seekBar.setProgress(20);
         seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -172,7 +188,50 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
             }
         });
 
-	}
+        //スピナーの設定
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // アイテムを追加します
+        adapter.add("Time Interval Mode");
+        adapter.add("Depend on Sensors Mode");
+        Spinner spinner = (Spinner) findViewById(id.spinner1);
+        // アダプターを設定します
+        spinner.setAdapter(adapter);
+        // スピナーのアイテムが選択された時に呼び出されるコールバックリスナーを登録します
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                    int position, long id) {
+                Spinner spinner = (Spinner) parent;
+                // 選択されたアイテムを取得します
+                int item = (int)spinner.getSelectedItemId();
+                //Toast.makeText(SpinnerSampleActivity.this, item, Toast.LENGTH_LONG).show();
+
+                switch (item) {
+				case 0:
+					//TimeIntervalMode
+					writeModeFlag = 2;
+					samplingRate.setVisibility(View.VISIBLE);
+					samplingRate2.setVisibility(View.VISIBLE);
+					seekBar.setVisibility(View.VISIBLE);
+					break;
+				case 1:
+					//sensor mode
+					writeModeFlag = 1;
+					samplingRate.setVisibility(View.INVISIBLE);
+					samplingRate2.setVisibility(View.INVISIBLE);
+					seekBar.setVisibility(View.INVISIBLE);
+					break;
+				default:
+					Log.d(TAG,"Error! !");
+					break;
+				}
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
+  	}
 
 
 	private final Runnable runnable = new Runnable() {
@@ -360,14 +419,12 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 		case R.id.Button01:
 			Log.d(TAG, "Hello!_HIDDEN BUTTON ");
 			showflag = !showflag;
+			hide.setVisibility(View.VISIBLE);
+			break;
 
-
-			Button btn1 = (Button) this.findViewById(R.id.button2);
-			if (btn1.getVisibility() != View.VISIBLE) {
-				btn1.setVisibility(View.VISIBLE);
-			}else{
-				btn1.setVisibility(View.INVISIBLE);
-			}
+		case R.id.imageButton1:
+			Log.d(TAG,"ImageButton is pushed");
+			hide.setVisibility(View.INVISIBLE);
 			break;
 		}
 	}
