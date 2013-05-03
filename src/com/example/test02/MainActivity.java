@@ -23,6 +23,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -44,7 +45,9 @@ import android.widget.TextView;
 
 import com.example.test02.R.id;
 
-public class MainActivity extends Activity implements SensorEventListener,LocationListener,OnClickListener{
+public class MainActivity
+extends Activity
+implements SensorEventListener,LocationListener,OnClickListener, GpsStatus.NmeaListener{
 
 	final static String TAG = "MyService";
 
@@ -66,10 +69,17 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	private TextView text13;
 	private TextView text14;
 	private TextView text15;
+	private String GPStime;
+	private String GPGSA;
+	private String GPRMC;
+	private String GPVTG;
+	private String GPGGA;
+	private String GPGSV;
 	private TextView samplingRate;
 	private TextView samplingRate2;
 	private SeekBar seekBar;
 	private ImageButton hide;
+	private EditText memo;
 
 	private Date date;
 	private String SDFile;
@@ -103,7 +113,9 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 
 		//センサ，GPS各サービスマネージャの取得
 		smanager = (SensorManager)this.getSystemService(SENSOR_SERVICE);
-		//lmanager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
+		lmanager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
+
+		lmanager.addNmeaListener(this);
 
 		//センサの情報をリストに読み込み
 		List<Sensor> sensors = smanager.getSensorList(Sensor.TYPE_ALL);
@@ -135,6 +147,8 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 			samplingRate2 = (TextView) this.findViewById(R.id.textView17);
 			seekBar = (SeekBar) findViewById(id.seekBar1);
 			hide = (ImageButton) findViewById(id.imageButton1);
+			memo = (EditText) this.findViewById(R.id.editText1);
+
 
 			hide.setVisibility(View.INVISIBLE);
 
@@ -275,9 +289,6 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				file = new File(SDFile);
 				file.getParentFile().mkdir();
 
-				EditText memo;
-				memo = (EditText) this.findViewById(R.id.editText1);
-
 				Log.d(TAG, "Hello!\n" + SDFile);
 
 
@@ -291,7 +302,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 
 				    //見出し
 				    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SSS",Locale.JAPAN);
-				    String titleStr = simpleDateFormat.format(date) + "\tAccX\tAccY\tAccZ\tLAccX\tLAccY\tLAccZ\tGyroX\tGyroY\tGyroZ\tMangX\tMagY\tMagZ\tLatitude\tLongitude\n";
+				    String titleStr = simpleDateFormat.format(date) + "\tAccX\tAccY\tAccZ\tLAccX\tLAccY\tLAccZ\tGyroX\tGyroY\tGyroZ\tMangX\tMagY\tMagZ\tLatitude\tLongitude\tGPStime\n";
 				    pw.append(titleStr);
 				    //ファイルストリーム閉じ
 				    pw.close();
@@ -312,89 +323,14 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				if(writeModeFlag == 1){
 				//書き込み祭り
 				while(true){
-					try{
-						FileOutputStream fos = new FileOutputStream(file,true);
-						OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
-						PrintWriter pw = new PrintWriter(osw);
-
-						double myTime = System.nanoTime() - startTime;
-						myTime *= 0.000000001;
-						Log.d(TAG, "Hello!_WRITING NOW");
-						String str = Double.toString(myTime)
-								+ "\t" + text1.getText().toString()
-								+ "\t" + text2.getText().toString()
-								+ "\t" + text3.getText().toString()
-								+ "\t" + text12.getText().toString()
-								+ "\t" + text13.getText().toString()
-								+ "\t" + text14.getText().toString()
-								+ "\t" + text4.getText().toString()
-								+ "\t" + text5.getText().toString()
-								+ "\t" + text6.getText().toString()
-								+ "\t" + text7.getText().toString()
-								+ "\t" + text8.getText().toString()
-								+ "\t" + text9.getText().toString()
-								+ "\t" + text10.getText().toString()
-								+ "\t" + text11.getText().toString()
-								+ "\n";
-						pw.append(str);
-						pw.close();
-						osw.close();
-						fos.close();
-
-					  	}
-					catch(FileNotFoundException e){
-						e.printStackTrace();
-					}
-					catch(UnsupportedEncodingException e){
-						e.printStackTrace();
-					}
-					catch(IOException e){
-						e.printStackTrace();
-					}
+					writeData();
 				}
 				}else if(writeModeFlag == 2){
 					//repeatIntervalでの定期呼び出し開始
 					timer.scheduleAtFixedRate(new TimerTask(){
 						@Override
 						public void run(){
-							try{
-								FileOutputStream fos = new FileOutputStream(file,true);
-								OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
-								PrintWriter pw = new PrintWriter(osw);
-
-								double myTime = System.nanoTime() - startTime;
-								myTime *= 0.000000001;
-								Log.d(TAG, "Hello!_WRITING NOW");
-								String str = Double.toString(myTime)
-										+ "\t" + text1.getText().toString()
-										+ "\t" + text2.getText().toString()
-										+ "\t" + text3.getText().toString()
-										+ "\t" + text12.getText().toString()
-										+ "\t" + text13.getText().toString()
-										+ "\t" + text14.getText().toString()
-										+ "\t" + text4.getText().toString()
-										+ "\t" + text5.getText().toString()
-										+ "\t" + text6.getText().toString()
-										+ "\t" + text7.getText().toString()
-										+ "\t" + text8.getText().toString()
-										+ "\t" + text9.getText().toString()
-										+ "\t" + text10.getText().toString()
-										+ "\t" + text11.getText().toString()
-										+ "\n";
-								pw.append(str);
-								pw.close();
-								osw.close();
-								fos.close();
-							}
-							catch(FileNotFoundException e){
-								e.printStackTrace();
-							}
-							catch(UnsupportedEncodingException e){
-								e.printStackTrace();
-							}
-							catch(IOException e){
-								e.printStackTrace();
-							}
+							writeData();
 						}
 					}, delayPoint, repeatInterval);
 				}else if(writeModeFlag == 0){
@@ -494,44 +430,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 				|| event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
 			){
 			Log.d(TAG, "HERE is line 380");
-			try{
-				FileOutputStream fos = new FileOutputStream(file,true);
-				OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
-				PrintWriter pw = new PrintWriter(osw);
-
-				double myTime = System.nanoTime() - startTime;
-				myTime *= 0.000000001;
-				Log.d(TAG, "Hello!_WRITING NOW");
-				String str = Double.toString(myTime)
-						+ "\t" + text1.getText().toString()
-						+ "\t" + text2.getText().toString()
-						+ "\t" + text3.getText().toString()
-						+ "\t" + text12.getText().toString()
-						+ "\t" + text13.getText().toString()
-						+ "\t" + text14.getText().toString()
-						+ "\t" + text4.getText().toString()
-						+ "\t" + text5.getText().toString()
-						+ "\t" + text6.getText().toString()
-						+ "\t" + text7.getText().toString()
-						+ "\t" + text8.getText().toString()
-						+ "\t" + text9.getText().toString()
-						+ "\t" + text10.getText().toString()
-						+ "\t" + text11.getText().toString()
-						+ "\n";
-				pw.append(str);
-				pw.close();
-				osw.close();
-				fos.close();
-			}
-			catch(FileNotFoundException e){
-				e.printStackTrace();
-			}
-			catch(UnsupportedEncodingException e){
-				e.printStackTrace();
-			}
-			catch(IOException e){
-				e.printStackTrace();
-			}
+			writeData();
 		}
 	}
 	@Override
@@ -544,45 +443,9 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 		//data11 = lon;
 		text10.setText(Double.toString(lat));
 		text11.setText(Double.toString(lon));
+		GPStime = String.valueOf(location.getTime());
 		if(writeFlag == true){
-			try{
-				FileOutputStream fos = new FileOutputStream(file,true);
-				OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
-				PrintWriter pw = new PrintWriter(osw);
-
-				double myTime = System.nanoTime() - startTime;
-				myTime *= 0.000000001;
-				Log.d(TAG, "Hello!_WRITING NOW");
-				String str = Double.toString(myTime)
-						+ "\t" + text1.getText().toString()
-						+ "\t" + text2.getText().toString()
-						+ "\t" + text3.getText().toString()
-						+ "\t" + text12.getText().toString()
-						+ "\t" + text13.getText().toString()
-						+ "\t" + text14.getText().toString()
-						+ "\t" + text4.getText().toString()
-						+ "\t" + text5.getText().toString()
-						+ "\t" + text6.getText().toString()
-						+ "\t" + text7.getText().toString()
-						+ "\t" + text8.getText().toString()
-						+ "\t" + text9.getText().toString()
-						+ "\t" + text10.getText().toString()
-						+ "\t" + text11.getText().toString()
-						+ "\n";
-				pw.append(str);
-				pw.close();
-				osw.close();
-				fos.close();
-			}
-			catch(FileNotFoundException e){
-				e.printStackTrace();
-			}
-			catch(UnsupportedEncodingException e){
-				e.printStackTrace();
-			}
-			catch(IOException e){
-				e.printStackTrace();
-			}
+			writeData();
 		}
 	}
 
@@ -595,11 +458,77 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras){}
 
+	@Override
+	public void onNmeaReceived(long timestamp, String nmea) {
+		String[] data = nmea.split(",");
+		// GPGSV,GPGSA,GPRMC,GPVTG,GPGGA
+		if (data[0].equals("$GPGSA")) {
+			GPGSA = nmea.trim();
+		} else if (data[0].equals("$GPRMC")) {
+			GPRMC = nmea.trim();
+		} else if (data[0].equals("$GPVTG")) {
+			GPVTG = nmea.trim();
+		} else if (data[0].equals("$GPGGA")) {
+			GPGGA = nmea.trim();
+		} else if (data[0].equals("$GPGSV")) {
+			// データ件数を取得
+			//int messageNum = Integer.valueOf(data[2]);
+			GPGSV = nmea.trim();
+		}
+
+	}
+
+	private void writeData(){
+		try{
+			FileOutputStream fos = new FileOutputStream(file,true);
+			OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+			PrintWriter pw = new PrintWriter(osw);
+
+			double myTime = System.nanoTime() - startTime;
+			myTime *= 0.000000001;
+			Log.d(TAG, "Hello!_WRITING NOW");
+			String str = Double.toString(myTime)
+					+ "\t" + text1.getText().toString()
+					+ "\t" + text2.getText().toString()
+					+ "\t" + text3.getText().toString()
+					+ "\t" + text12.getText().toString()
+					+ "\t" + text13.getText().toString()
+					+ "\t" + text14.getText().toString()
+					+ "\t" + text4.getText().toString()
+					+ "\t" + text5.getText().toString()
+					+ "\t" + text6.getText().toString()
+					+ "\t" + text7.getText().toString()
+					+ "\t" + text8.getText().toString()
+					+ "\t" + text9.getText().toString()
+					+ "\t" + text10.getText().toString()
+					+ "\t" + text11.getText().toString()
+					+ "\t" + GPStime
+					+ "\t" + GPGSA
+					+ "\t" + GPRMC
+					+ "\t" + GPVTG
+					+ "\t" + GPGGA
+					+ "\t" + GPGSV
+					+ "\n";
+			pw.append(str);
+			pw.close();
+			osw.close();
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(UnsupportedEncodingException e){
+			e.printStackTrace();
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	protected void onResume() {
 		lmanager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
+		lmanager.addNmeaListener(this);
 
 		if(!lmanager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
 			//GPSの有効化を尋ねる．
@@ -648,6 +577,7 @@ public class MainActivity extends Activity implements SensorEventListener,Locati
 		super.onDestroy();
 		// 重要：requestLocationUpdatesしたままアプリを終了すると挙動がおかしくなる。
 		lmanager.removeUpdates(this);
+		lmanager.removeNmeaListener(this);
 		cancelTimer();
 	}
 }
