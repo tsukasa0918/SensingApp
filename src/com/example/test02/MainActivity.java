@@ -179,12 +179,18 @@ implements SensorEventListener,LocationListener,OnClickListener, GpsStatus.NmeaL
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
                 Log.v("onProgressChanged()",
                     String.valueOf(progress) + ", " + String.valueOf(fromTouch));
-                int intHz;
+                int intHz = 200;
                 double Hz = Double.valueOf(String.valueOf(progress));
-                if(Hz == 0){
+                if(Hz >= 80){
                 	intHz = 1000;
-                }else{
-                	intHz = (int)(1000/Hz);
+                }else if (60 <= Hz && Hz < 80){
+                	intHz = 500;
+                }else if (40 <= Hz && Hz < 60){
+                	intHz = 200;
+                }else if (20 <= Hz && Hz < 40){
+                	intHz = 100;
+                }else if (0 <= Hz && Hz < 20){
+                	intHz = 50;
                 }
                 samplingRate.setText(Integer.toString(intHz));
             }
